@@ -581,6 +581,7 @@ body.light-theme .history-card {
     <div class="oval" style="border-color: #9b59b6;" data-i18n="imm" onclick="openAnalysisForm('immunology')">ИММУНОЛОГИЯ</div>
     <div class="oval" style="border-color: #f39c12;" data-i18n="all" onclick="openAnalysisForm('allergy')">АЛЛЕРГОЛОГИЯ</div>
     <div class="oval" style="border-color: #9b59b6;" data-i18n="hormones" onclick="openAnalysisForm('hormones')">ГОРМОНЫ</div>
+    <div class="oval" style="border-color: #ffd700;" data-i18n="prev" onclick="openAnalysisForm('prevention')">ПРЕВЕНЦИЯ</div>
     <div class="oval" style="border-color: #2ecc71;" data-i18n="vitamins" onclick="openAnalysisForm('vitamins')">ВИТАМИНЫ / МИНЕРАЛЫ</div>
     <div class="oval" data-i18n="back" onclick="goTo('main-screen')">НАЗАД</div>
 </div>
@@ -643,6 +644,7 @@ body.light-theme .history-card {
     <div class="oval" style="border-color: #9b59b6;" data-i18n="ref_imm" onclick="openReference('ИММУНОЛОГИЯ')">ИММУНОЛОГИЯ</div>
     <div class="oval" style="border-color: #f39c12;" data-i18n="ref_all" onclick="openReference('АЛЛЕРГОЛОГИЯ')">АЛЛЕРГОЛОГИЯ</div>
     <div class="oval" style="border-color: #9b59b6;" data-i18n="ref_horm" onclick="openReference('ГОРМОНЫ')">ГОРМОНЫ</div>
+    <div class="oval" style="border-color: #ffd700;" data-i18n="ref_prev" onclick="openReference('ПРЕВЕНЦИЯ')">ПРЕВЕНЦИЯ</div>
     <div class="oval" style="border-color: #2ecc71;" data-i18n="ref_vit" onclick="openReference('ВИТАМИНЫ / МИНЕРАЛЫ')">ВИТАМИНЫ / МИНЕРАЛЫ</div>
     <div class="oval" data-i18n="btn_back" onclick="goTo('main-screen')">НАЗАД</div>
 </div>
@@ -1017,7 +1019,9 @@ disc_title: "ДОБРО ПОЖАЛОВАТЬ!",
         imm: "ИММУНОЛОГИЯ",
 ref_imm: "ИММУНОЛОГИЯ",
 all: "АЛЛЕРГОЛОГИЯ",
-ref_all: "АЛЛЕРГОЛОГИЯ"
+ref_all: "АЛЛЕРГОЛОГИЯ",
+prev: "ПРЕВЕНЦИЯ",
+ref_prev: "ПРЕВЕНЦИЯ"
     },
     en: {
         settings_title: "SETTINGS",
@@ -1174,7 +1178,9 @@ disc_title: "WELCOME!",
         imm: "IMMUNOLOGY",
 ref_imm: "IMMUNOLOGY",
 all: "ALLERGY",
-ref_all: "ALLERGY"
+ref_all: "ALLERGY",
+prev: "PREVENTION",
+ref_prev: "PREVENTION"
 }
 };
 
@@ -1381,14 +1387,16 @@ async function finalExpertAnalysisWithStack() {
     // 4. Сбор данных (учитываем пол, статусы и цифры)
     let currentData = [];
     
-    // ОПРЕДЕЛЯЕМ ПОЛ НАПРЯМУЮ ИЗ ИНТЕРФЕЙСА
-    // Ищем кнопку пола, у которой есть класс 'active'
-    const maleBtn = document.querySelector('.gender-btn[onclick*="setGender(true)"]');
-    const genderIsMale = maleBtn && maleBtn.classList.contains('active');
-    
-    const genderPatient = genderIsMale ? "ПАЦИЕНТ: МУЖЧИНА" : "ПАЦИЕНТ: ЖЕНЩИНА";
-    currentData.push(genderPatient);
+    // ПРАВИЛЬНЫЙ СБОР ПОЛА ИЗ ВЫПАДАЮЩЕГО СПИСКА (SELECT)
+    const genderSelect = document.getElementById('user-gender');
+    let genderStr = "ПАЦИЕНТ: МУЖЧИНА"; // Значение по умолчанию
 
+    if (genderSelect) {
+        const val = genderSelect.value; // Получаем 'male' или 'female'
+        genderStr = (val === 'male') ? "ПАЦИЕНТ: МУЖЧИНА" : "ПАЦИЕНТ: ЖЕНЩИНА";
+    }
+    
+    currentData.push(genderStr);
     // Собираем цифры из инпутов
     const inputs = document.querySelectorAll('.analysis-input');
     inputs.forEach(input => {
@@ -1465,7 +1473,11 @@ if (refData && refData.parameters) {
 1. Проведи глубокий технический разбор предоставленных значений.
 2. КАТЕГОРИЧЕСКИ ЗАПРЕЩЕНО упоминать конкретные лекарства, БАДы и схемы лечения.
 3. Используй нейтральный, но детальный научно-исследовательский тон.
-4. Твой ответ должен состоять СТРОГО из двух секций:
+4. При интерпретации показателей учитывай, что отклонения могут иметь физиологическую природу 
+(например, беременность, фаза цикла и т.д.). Обязательно включай такие варианты в 
+дифференциально-диагностический контекст как равноправные гипотезы, 
+если они биологически возможны для данного пола
+5. Твой ответ должен состоять СТРОГО из двух секций:
 
 ${sect1}
 ${warning}
@@ -1702,6 +1714,8 @@ function clearHistory() {
         { name: "ЛПНП (LDL)", name_en: "LDL Cholesterol", unit: "ммоль/л", common: "до 3.0", common_en: "up to 3.0" },
         { name: "ЛПВП (HDL)", name_en: "HDL Cholesterol", unit: "ммоль/л", common: "более 1.2", common_en: "over 1.2" },
         { name: "Триглицериды", name_en: "Triglycerides", unit: "ммоль/л", common: "0.4-1.7" },
+        { name: "Омега-3 индекс", name_en: "Omega-3 Index", unit: "%", common: "более 8.0" },
+        { name: "Липопротеин (а)", name_en: "Lipoprotein (a)", unit: "мг/дл", common: "до 30" },
         { name: "МАРКЕРЫ ВОСПАЛЕНИЯ И ОБМЕНА", name_en: "INFLAMMATION MARKERS", isHeader: true, color: "#e74c3c" },
         { name: "C-реактивный белок (СРБ)", name_en: "C-Reactive Protein (CRP)", unit: "мг/л", common: "0-5" },
         { name: "Прокальцитонин", name_en: "Procalcitonin", unit: "нг/мл", common: "до 0.05", common_en: "up to 0.05" },
@@ -1806,6 +1820,7 @@ immunology: {
         { name: "IgA общий", name_en: "Total IgA", unit: "г/л", common: "0.7-4.0" },
         { name: "IgM общий", name_en: "Total IgM", unit: "г/л", common: "0.4-2.3" },
         { name: "IgG общий", name_en: "Total IgG", unit: "г/л", common: "7.0-16.0" },
+        { name: "Иммуноглобулин D (IgD)", name_en: "Immunoglobulin D", unit: "мг/л", common: "до 100" },
         
         { name: "КЛЕТОЧНЫЙ ИММУНИТЕТ (CD-МАРКЕРЫ)", name_en: "CELLULAR IMMUNITY", isHeader: true, color: "#3498db" },
         { name: "Т-хелперы (CD4+)", name_en: "CD4+ T-cells", unit: "кл/мкл", common: "500-1500" },
@@ -1848,6 +1863,22 @@ allergy: {
         { name: "Dermatophagoides (Клещ пыли)", name_en: "Dust Mite (d1)", unit: "МЕ/мл", common: "до 0.35" },
         { name: "Глютен (f79) IgE", name_en: "Gluten IgE", unit: "МЕ/мл", common: "до 0.35" },
         { name: "Триптаза", name_en: "Tryptase", unit: "мкг/л", common: "до 11" }
+    ]
+},
+prevention: {
+    title: "Превенция и Генетика",
+    title_en: "Prevention & Genetics",
+    parameters: [
+        { name: "МАРКЕРЫ СТАРЕНИЯ", name_en: "LONGEVITY MARKERS", isHeader: true, color: "#ffd700" },
+        { name: "ИФР-1 (Соматомедин С)", name_en: "IGF-1", unit: "нг/мл", common: "100-300" },
+        { name: "Гомоцистеин", name_en: "Homocysteine", unit: "мкмоль/л", common: "5.0-12.0" },
+        { name: "Инсулин", name_en: "Insulin", unit: "мкЕд/мл", common: "2.6-24.9" },
+        { name: "Индекс HOMA-IR", name_en: "HOMA-IR", unit: "ед.", common: "до 2.7" },
+        
+        { name: "ГЕНЕТИЧЕСКИЙ ПАСПОРТ", name_en: "GENETIC PROFILE", isHeader: true, color: "#ff8c00" },
+        { name: "Мутация MTHFR", name_en: "MTHFR mutation", type: "status", common: "отрицательно" },
+        { name: "Ген APOE (риск Альцгеймера)", name_en: "APOE Genotype", type: "status_multi", common: "E3/E3", options: ["E2/E2", "E2/E3", "E3/E3", "E3/E4", "E4/E4"], options_en: ["E2/E2", "E2/E3", "E3/E3", "E3/E4", "E4/E4"], optionColors: ["#f1c40f", "#27ae60", "#27ae60", "#f39c12", "#e74c3c"] },
+        { name: "Лактазная недостаточность", name_en: "Lactose Intolerance", type: "status_multi", unit: "генотип", unit_en: "genotype", common: "C/C (норма)", common_en: "C/C (normal)", options: ["C/C", "C/T", "T/T"], options_en: ["C/C", "C/T", "T/T"], optionColors: ["#27ae60", "#f1c40f", "#e74c3c"] }
     ]
 },
             vitamins: {
@@ -1897,7 +1928,15 @@ function openAnalysisForm(type) {
     document.getElementById('form-title').innerText = (isEn ? 'Entry: ' : 'Ввод: ') + (isEn ? (data.title_en || data.title) : data.title);
     container.innerHTML = '';
 
-    const unitMap = { 'г/л': 'g/L', '10^12/л': '10^12/L', '10^9/л': '10^9/L', 'мм/ч': 'mm/h', 'фл': 'fL', 'пг': 'pg', 'ммоль/л': 'mmol/L', 'мкмоль/л': 'µmol/L', 'Ед/л': 'U/L', 'ед.': 'unit', 'сек': 'sec', 'в п.зр.': 'HPF', 'МЕ/мл': 'IU/mL', 'МЕ/л': 'IU/L', 'Ед/мл': 'U/mL', 'нг/мл': 'ng/mL', 'пг/мл': 'pg/mL', 'мг/л': 'mg/L', 'мкг/л': 'µg/L', 'мм рт.ст.': 'mmHg', 'мл/мин/1.73м2': 'mL/min/1.73m²', 'мкМЕ/мл': 'µIU/mL', 'пмоль/л': 'pmol/L', 'нмоль/л': 'nmol/L', 'мкЕд/мл': 'µU/mL' };
+    // Добавили 'генотип' в мапу юнитов
+    const unitMap = { 
+        'генотип': 'genotype', 'г/л': 'g/L', '10^12/л': '10^12/L', '10^9/л': '10^9/L', 
+        'мм/ч': 'mm/h', 'фл': 'fL', 'пг': 'pg', 'ммоль/л': 'mmol/L', 'мкмоль/л': 'µmol/L', 
+        'Ед/л': 'U/L', 'ед.': 'unit', 'сек': 'sec', 'в п.зр.': 'HPF', 'МЕ/мл': 'IU/mL', 
+        'МЕ/л': 'IU/L', 'Ед/мл': 'U/mL', 'нг/мл': 'ng/mL', 'пг/мл': 'pg/mL', 'мг/л': 'mg/L', 
+        'мкг/л': 'µg/L', 'мм рт.ст.': 'mmHg', 'мл/мин/1.73м2': 'mL/min/1.73m²', 
+        'мкМЕ/мл': 'µIU/mL', 'пмоль/л': 'pmol/L', 'нмоль/л': 'nmol/L', 'мкЕд/мл': 'µU/mL' 
+    };
 
     let currentBox = null;
     data.parameters.forEach(p => {
@@ -1915,7 +1954,7 @@ function openAnalysisForm(type) {
             container.appendChild(currentBox);
 
         } else if (p.type === 'color_panel') {
-            // 1. ЛОГИКА ПАЛИТРЫ ЦВЕТОВ
+            // ... (твой код палитры без изменений) ...
             const div = document.createElement('div');
             div.style.marginBottom = "20px";
             const colors = [
@@ -1927,65 +1966,58 @@ function openAnalysisForm(type) {
                 { hex: "#229954", val: "green", name: "Зелен.", en: "Green" },
                 { hex: "#ECF0F1", val: "cloudy", name: "Мутн.", en: "Cloudy" }
             ];
-            
             div.innerHTML = `
                 <label style="display:block; font-weight:800; font-size:0.8em; margin-bottom:10px;">${displayName}</label>
                 <div style="display:flex; justify-content:space-between; gap:5px;">
-                    ${colors.map(c => `
-                        <div onclick="selectColorStatus('${p.name}', '${c.val}', this)" 
-                             style="background:${c.hex}; flex:1; height:40px; border-radius:8px; border:2px solid transparent; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:9px; color:#000; font-weight:bold;">
-                             ${isEn ? c.en : c.name}
-                        </div>
-                    `).join('')}
+                    ${colors.map(c => `<div onclick="selectColorStatus('${p.name}', '${c.val}', this)" style="background:${c.hex}; flex:1; height:40px; border-radius:8px; border:2px solid transparent; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:9px; color:#000; font-weight:bold;">${isEn ? c.en : c.name}</div>`).join('')}
                 </div>
             `;
-            statusSelections[p.name] = 'yellow'; // По умолчанию желтый
+            statusSelections[p.name] = 'yellow';
             (currentBox || container).appendChild(div);
 
         } else if (p.type === 'status') {
-            // Твой существующий код для ОТР/ПОЛ
-            const labelNeg = translations[currentLang]?.stat_neg || 'ОТРИЦ.';
-            const labelPos = translations[currentLang]?.stat_pos || 'ПОЛОЖИТ.';
+            // ОСТАВЛЯЕМ ДЛЯ ОБЫЧНЫХ ДВУХ КНОПОК (ОТР/ПОЛ)
             const div = document.createElement('div');
             div.style.marginBottom = "20px";
+            const labelNeg = isEn ? "NEG." : "ОТРИЦ.";
+            const labelPos = isEn ? "POS." : "ПОЛОЖИТ.";
             div.innerHTML = `
                 <label style="display:block; color:var(--text-color); font-weight:800; font-size:0.8em; text-align:left; margin-bottom:8px;">${displayName}</label>
                 <div style="display:flex; gap:10px;">
-                    <button type="button" class="status-btn active" onclick="updateStatus('${p.name}', 'negative', this)" 
-                        style="flex:1; padding:12px; border:1px solid var(--accent-color); border-radius:12px; background:#27ae60; color:white; font-weight:bold;">
-                        ${labelNeg}
-                    </button>
-                    <button type="button" class="status-btn" onclick="updateStatus('${p.name}', 'positive', this)" 
-                        style="flex:1; padding:12px; border:1px solid var(--accent-color); border-radius:12px; background:transparent; color:white; font-weight:bold;">
-                        ${labelPos}
-                    </button>
+                    <button type="button" class="status-btn active" onclick="updateStatus('${p.name}', 'negative', this)" style="flex:1; padding:12px; border:1px solid var(--accent-color); border-radius:12px; background:#27ae60; color:white; font-weight:bold; font-size:11px;">${labelNeg}</button>
+                    <button type="button" class="status-btn" onclick="updateStatus('${p.name}', 'positive', this)" style="flex:1; padding:12px; border:1px solid var(--accent-color); border-radius:12px; background:transparent; color:white; font-weight:bold; font-size:11px;">${labelPos}</button>
                 </div>`;
             statusSelections[p.name] = 'negative';
             (currentBox || container).appendChild(div);
 
         } else if (p.type === 'status_multi') {
-    // 2. ЛОГИКА МНОГОУРОВНЕВЫХ КНОПОК (НЕТ/NONE, +, ++, +++)
-    const div = document.createElement('div');
-    div.style.marginBottom = "20px";
-    
-    // ПРОВЕРКА ЯЗЫКА ДЛЯ КНОПКИ "НЕТ"
-    const firstOpt = isEn ? "NONE" : "НЕТ";
-    const opts = [firstOpt, "+", "++", "+++"];
-    const vals = ["none", "low", "mid", "high"];
-    
-    div.innerHTML = `
-        <label style="display:block; font-weight:800; font-size:0.8em; margin-bottom:8px;">${displayName}</label>
-        <div style="display:flex; gap:5px;">
-            ${opts.map((o, idx) => `
-                <button type="button" class="status-btn ${idx===0?'active':''}" onclick="updateStatus('${p.name}', '${vals[idx]}', this)"
-                    style="flex:1; padding:10px 5px; border:1px solid var(--accent-color); border-radius:10px; background:${idx===0?'#27ae60':'transparent'}; color:white; font-size:11px; font-weight:bold;">
-                    ${o}
-                </button>
-            `).join('')}
-        </div>
-    `;
-    statusSelections[p.name] = 'none';
-    (currentBox || container).appendChild(div);
+            const div = document.createElement('div');
+            div.style.marginBottom = "20px";
+            
+            const opts = isEn ? (p.options_en || p.options) : p.options;
+            const finalOpts = opts || [ (isEn ? "NONE" : "НЕТ"), "+", "++", "+++" ];
+            
+            // КЛЮЧЕВОЕ ИСПРАВЛЕНИЕ: Берем цвета из справочника или делаем все зелеными
+            const colors = p.optionColors || finalOpts.map(() => "#27ae60");
+            
+            div.innerHTML = `
+                <label style="display:block; font-weight:800; font-size:0.8em; margin-bottom:8px;">${displayName}</label>
+                <div style="display:flex; gap:5px; flex-wrap:wrap;">
+                    ${finalOpts.map((o, idx) => {
+                        const btnColor = colors[idx] || "#27ae60"; // Цвет для этой конкретной кнопки
+                        return `
+                        <button type="button" 
+                            class="status-btn ${idx===0?'active':''}" 
+                            onclick="updateStatus('${p.name}', '${o}', this)"
+                            data-active-color="${btnColor}" 
+                            style="flex:1; min-width:60px; padding:10px 5px; border:1px solid ${btnColor}; border-radius:10px; background:${idx===0 ? btnColor : 'transparent'}; color:white; font-size:11px; font-weight:bold;">
+                            ${o}
+                        </button>`;
+                    }).join('')}
+                </div>
+            `;
+            statusSelections[p.name] = finalOpts[0];
+            (currentBox || container).appendChild(div);
 
         } else {
             // Обычный числовой ввод
@@ -2012,23 +2044,39 @@ function updateStatus(paramName, value, element) {
     statusSelections[paramName] = value;
     const parent = element.parentElement;
     
-    // 1. Снимаем активность и сбрасываем фон у всех кнопок в группе
     parent.querySelectorAll('.status-btn').forEach(btn => {
         btn.classList.remove('active');
+        // ВОЗВРАЩАЕМ СТАНДАРТНЫЙ ВИД ДЛЯ НЕАКТИВНЫХ КНОПОК
         btn.style.background = 'transparent';
+        btn.style.color = 'white';
+        // Если была цветная рамка, сохраняем её, чтобы кнопка не «исчезала»
+        const borderColor = btn.getAttribute('data-active-color') || 'var(--accent-color)';
+        btn.style.border = `1px solid ${borderColor}`;
     });
     
-    // 2. Добавляем класс активной кнопке
     element.classList.add('active');
     
-    // 3. Умная раскраска в зависимости от значения
-    if (value === 'negative' || value === 'none' || value === 'absent') {
-        element.style.background = '#27ae60'; // Зеленый (Норма)
-    } else if (value === 'low' || value === '+') {
-        element.style.background = '#f1c40f'; // Желтый (Следы / Мало)
+    const customColor = element.getAttribute('data-active-color');
+    let activeColor = '#27ae60'; // По умолчанию зеленый
+
+    if (customColor) {
+        activeColor = customColor;
     } else {
-        element.style.background = '#e74c3c'; // Красный (Положительно / Много)
+        if (value === 'negative' || value === 'none' || value === 'absent') {
+            activeColor = '#27ae60';
+        } else if (value === 'low' || value === '+') {
+            activeColor = '#f1c40f';
+        } else {
+            activeColor = '#e74c3c';
+        }
     }
+
+    // КРАСИМ АКТИВНУЮ КНОПКУ
+    element.style.background = activeColor;
+    element.style.border = `1px solid ${activeColor}`;
+    
+    // Если фон желтый — текст черный, иначе — белый
+    element.style.color = (activeColor === '#f1c40f') ? '#000' : '#fff';
 }
         function runQuickCheck() {
     const inputs = document.querySelectorAll('.analysis-input');
@@ -2075,7 +2123,8 @@ function openReference(type) {
         'КОАГУЛОГРАММА': 'coag', 'ГАЗЫ КРОВИ / КЩС': 'vbg',
         'ОНКОМАРКЕРЫ': 'tumor', 'СЕРОЛОГИЯ': 'serology',
         'ГОРМОНЫ': 'hormones', 'ВИТАМИНЫ / МИНЕРАЛЫ': 'vitamins', 
-        'ИММУНОЛОГИЯ': 'immunology', 'АЛЛЕРГОЛОГИЯ': 'allergy'
+        'ИММУНОЛОГИЯ': 'immunology', 'АЛЛЕРГОЛОГИЯ': 'allergy',
+        'ПРЕВЕНЦИЯ': 'prevention'
     };
     
     const realKey = typeMap[type.trim()];
@@ -2092,6 +2141,7 @@ function openReference(type) {
     const labelF = translations[currentLang].ref_f;
 
     const unitMap = {
+        'генотип': 'genotype',
         'г/л': 'g/L',
         '10^12/л': '10^12/L',
         '10^9/л': '10^9/L',
@@ -2118,7 +2168,9 @@ function openReference(type) {
         'нмоль/л': 'nmol/L',
         'мкЕд/мл': 'µU/mL',
         'кл/мкл': 'cells/µL',
-        'ед.опт.пл.': 'OD units'
+        'ед.опт.пл.': 'OD units',
+        'мг/дл': 'mg/dL',
+        
     };
 
     let html = `<h2>${displayTitle}</h2><table id="ref-table" style="width: 100%; border-collapse: collapse;">`;
@@ -2147,6 +2199,14 @@ function openReference(type) {
             .replace(/до/gi, 'up to')
             .replace(/более/gi, 'over');
     }
+    if (isEn) {
+    normDisplay = String(normDisplay)
+    .replace(/отрицательно/gi, 'Negative')
+    .replace(/до/gi, 'up to')
+    .replace(/более/gi, 'over')
+    .replace(/норма/gi, 'normal')
+    .replace(/генотип/gi, 'genotype');
+}
 
     // 3. Исправляем отображение единиц измерения (убираем undefined)
     const rawUnit = p.unit || "";
