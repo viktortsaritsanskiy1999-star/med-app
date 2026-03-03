@@ -4477,6 +4477,7 @@ prevention: {
         ]
     }
         };
+// 1. ФИНАЛЬНАЯ ФУНКЦИЯ ПЕРЕХОДА (Замени свою старую на эту)
 function goTo(screenId) {
     // Скрываем все экраны
     document.querySelectorAll('.screen').forEach(s => {
@@ -4486,16 +4487,53 @@ function goTo(screenId) {
 
     const target = document.getElementById(screenId);
     if (target) {
-        // Сбрасываем скролл окна в 0 перед показом нового экрана
         window.scrollTo(0, 0); 
-        
-        target.style.display = 'flex'; // Используем flex для центровки
+        target.style.display = 'flex'; 
         target.classList.add('active-screen');
-        
-        // Сбрасываем внутренний скролл самого экрана
         target.scrollTop = 0;
+
+        // Сохраняем состояние в историю браузера
+        history.pushState({ screenId: screenId }, "");
     }
 }
+
+// 2. ФИНАЛЬНЫЙ ОБРАБОТЧИК КНОПКИ "НАЗАД"
+window.onpopstate = function(event) {
+    // Список всех модалок, которые могут быть открыты ПОВЕРХ экранов
+    const modals = [
+        'amorHubModal', 'amorStepModal', 'api-modal-custom', 
+        'disclaimer-modal', 'confirm-modal', 'tutorialModal', 
+        'start-disclaimer', 'step4-amorchik'
+    ];
+    
+    // Проверяем, открыта ли хоть одна модалка
+    for (let id of modals) {
+        let m = document.getElementById(id);
+        if (m && m.style.display !== 'none') {
+            m.style.display = 'none'; // Закрываем модалку
+            history.pushState(null, ""); // "Съедаем" клик назад, чтобы не менять экран
+            return; 
+        }
+    }
+
+    // Если модалок нет, переключаем основной экран
+    if (event.state && event.state.screenId) {
+        // Показываем экран из истории
+        document.querySelectorAll('.screen').forEach(s => {
+            s.style.display = 'none';
+            s.classList.remove('active-screen');
+        });
+        const target = document.getElementById(event.state.screenId);
+        if (target) {
+            target.style.display = 'flex';
+            target.classList.add('active-screen');
+        }
+    } else {
+        // Если истории нет — идем на главный
+        const main = document.getElementById('main-screen');
+        if(main) goTo('main-screen');
+    }
+};
         let statusSelections = {}; 
 
 function openAnalysisForm(type) {
